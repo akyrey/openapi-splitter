@@ -1,0 +1,97 @@
+# .goreleaser.yaml — release configuration for openapi-splitter.
+# Run: goreleaser release --clean
+# Dry-run: goreleaser release --snapshot --clean
+version: 2
+
+project_name: openapi-splitter
+
+before:
+  hooks:
+    - go mod tidy
+    - go mod verify
+
+builds:
+  - id: openapi-splitter
+    main: .
+    binary: openapi-splitter
+    # Embed version at build time via the same ldflags used in the Makefile.
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    # Exclude windows/arm64 — not yet mainstream enough to warrant testing.
+    ignore:
+      - goos: windows
+        goarch: arm64
+
+archives:
+  - id: openapi-splitter
+    ids:
+      - openapi-splitter
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+    files:
+      - LICENSE
+      - README.md
+
+checksum:
+  name_template: "checksums.txt"
+  algorithm: sha256
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "^ci:"
+      - Merge pull request
+      - Merge branch
+  groups:
+    - title: "New Features"
+      regexp: "^feat"
+      order: 0
+    - title: "Bug Fixes"
+      regexp: "^fix"
+      order: 1
+    - title: "Other Changes"
+      order: 999
+
+release:
+  github:
+    owner: akyrey
+    name: openapi-splitter
+  draft: false
+  prerelease: auto
+  name_template: "v{{.Version}}"
+
+homebrew_casks:
+  - name: openapi-splitter
+    homepage: https://github.com/akyrey/openapi-splitter
+    description: "Split a single OpenAPI 3.0/3.1 specification into multiple organized files with $ref references"
+    license: MIT
+    repository:
+      owner: akyrey
+      name: homebrew-tap
+      branch: main
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    commit_author:
+      name: goreleaserbot
+      email: bot@goreleaser.com
+    commit_msg_template: "Brew formula update for {{ .ProjectName }} version {{ .Tag }}"
+    directory: Casks
