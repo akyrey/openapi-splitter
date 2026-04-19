@@ -4,7 +4,7 @@ go 1.26.1
 
 require (
 	github.com/editorconfig/editorconfig-core-go/v2 v2.6.4
-	github.com/pb33f/libopenapi v0.34.4
+	github.com/pb33f/libopenapi v0.36.1
 	github.com/pb33f/libopenapi-validator v0.13.3
 	github.com/spf13/cobra v1.10.2
 	gopkg.in/yaml.v3 v3.0.1
